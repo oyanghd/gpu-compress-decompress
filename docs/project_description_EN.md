@@ -1,20 +1,22 @@
-# gpu压缩和解压工具
+# gpu-compress-decompress
 
-## 项目说明
+[English](project_description_EN.md) | [中文](project_description_ZH.md)
 
-该项目的实现初衷是当前Linux服务器的压缩软件应用一般都是只运行在cpu的，并且甚至一些比较常用的gzip、bzip2、unzip等压缩软件甚至全部都是单核运行的，这对于一些比较大的文件的压缩的速度就会非常受限，并且一些比较知名的压缩软件，比如tar、xz、unrar(RAR5的版本才支持多核、但仍然不支持GPU)等，虽然在多核情况下表现良好，但是对一些比较大的文件（超过1G），它们的性能并不如使用GPU的压缩方式，而一般个人的系统中，CPU、GPU对用户自身都是可见的，个人很容易平衡他们之上的负载，所以为用户提供一个可以支持多核和GPU加速的压缩、解压对于用户根据自身使用的应用情况和设备负载可以自由选择一个合适的压缩/解压缩方式非常有意义
+## Project Description
 
-目前本项目的工作主要是：
+The initial intent of this project is to address the fact that most compression software applications on Linux servers run only on CPUs. Even commonly used compression tools like gzip, bzip2, and unzip operate on a single core, which significantly limits the speed of compressing large files. While some well-known compression software such as tar, xz, and unrar (RAR5 version supports multicore but still not GPU), perform well with multicore systems, they are not as efficient as GPU-based compression methods for very large files (over 1GB). In most personal systems, both the CPU and GPU are accessible to the user, making it easy for individuals to balance the load between them. Therefore, providing users with a compression/decompression tool that supports multicore and GPU acceleration would be very meaningful, allowing users to choose a suitable compression/decompression method based on their application needs and device load.
 
-+ 借鉴了Huffman串行的思想
-+ 参考了MPI-Huffman对于Compress/Decompress实现
-+ 完成了CUDACompress的实现
-+ 完成了MPI对CUDACompress的串行部分的加速
-+ 相比如tar在一个比较实用场景的nvhpc的压缩包解压有10.16倍的加速比（tar 36.731s，本项目3.613s）
+The current work of this project primarily includes:
 
-## 安装运行
+- Drawing inspiration from the serial idea of Huffman coding
+- Referring to MPI-Huffman for Compress/Decompress implementation
+- Completing the implementation of CUDACompress
+- Accelerating the serial part of CUDACompress with MPI
+- Comparing with tar in a practical scenario
 
-### 依赖包含：
+## Installation and Operation
+
+### Dependencies include:
 
 ```shell
 HPCX
@@ -22,11 +24,11 @@ CUDA
 infiniband mellanox ofed 5.x
 ```
 
-### 目前我测试成功的依赖版本：
+### Currently tested successful dependency versions:
 
-#### 以下环境为后面测试使用的标准环境
+#### The following environment is used as the standard for later tests
 
-软件环境
+Software environment:
 
 ```
 CUDA 11.8
@@ -35,7 +37,7 @@ MLNX_OFED_LINUX-5.0-2.1.8.0-ubuntu20.04-x86_64
 HPCX 2.13.0
 ```
 
-硬件环境
+Hardware environment:
 
 ```
 CPU Intel(R) Xeon(R) CPU E5-2680 v4 @ 2.40GHz
@@ -43,9 +45,9 @@ GPU 2 x P100-16G
 IB Connet-X 3
 ```
 
-#### 以下环境为做迁移测试的环境（额外支持，同时在该机器上测试成功了NVLink通信加速支持）
+#### The following environment is the environment for migration testing (additional support, and NVLink communication acceleration support was successfully tested on this machine)
 
-软件环境
+Software Environment
 
 ```
 CUDA 12.0
@@ -54,7 +56,7 @@ MLNX_OFED_LINUX-5.4-ubuntu20.04-x86_64
 HPCX (bind-to nvhpc 23.1)
 ```
 
-硬件环境
+Hardware environment:
 
 ```
 CPU AMD EPYC 7742 64-Core Processor
@@ -168,32 +170,32 @@ NIC Legend:
 
 ![image-20231203174232169](C:\Users\ASUS\AppData\Roaming\Typora\typora-user-images\image-20231203174232169.png)
 
-### 依赖的安装方式
+### Dependency installation method
 
-当前应用部署的操作系统均为Ubuntu20.04，以下安装方式均已Ubuntu20.04为例
+The operating systems currently used for application deployment are Ubuntu20.04. The following installation methods are all based on Ubuntu20.04 as an example.
 
-（CUDA的安装需要有GPU支持，Infiniband Driver的安装需要机器本身配有IB网卡，HPCX的安装需要本机的IB Driver和CUDA的版本满足要求，也算是进一步要求本机需要配有GPU和IB网卡）
+(The installation of CUDA requires GPU support, the installation of Infiniband Driver requires the machine itself to be equipped with an IB network card, and the installation of HPCX requires that the version of the IB Driver and CUDA of the machine meet the requirements, which is also a further requirement that the machine needs to be equipped with a GPU and IB network card. )
 
 #### CUDA
 
-Driver驱动官网下载（可以直接使用下方的wget命令get到对应的驱动包）
+Download the Driver from the official website (you can directly use the wget command below to get the corresponding driver package)
 
 [CUDA Toolkit 11.8 Downloads | NVIDIA Developer](https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Linux)
 
-这里推荐使用11.8，下载run_file文件
+It is recommended to use 11.8 here, download the run_file file
 
 ```shell
 wget https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda_11.8.0_520.61.05_linux.run
 sudo sh cuda_11.8.0_520.61.05_linux.run
 ```
 
-然后根据提示安装即可
+Then follow the prompts to install it
 
 #### Infiniband Driber
 
-驱动使用官网的下载[Linux InfiniBand Drivers (nvidia.com)](https://network.nvidia.com/products/infiniband-drivers/linux/mlnx_ofed/)
+Download the driver from the official website [Linux InfiniBand Drivers (nvidia.com)](https://network.nvidia.com/products/infiniband-drivers/linux/mlnx_ofed/)
 
-选择对应的版本和型号后解压，然后进文件夹执行相应的安装脚本，而后按照提示安装即可
+Select the corresponding version and model, unzip it, then enter the folder to execute the corresponding installation script, and then follow the prompts to install it.
 
 ```shell
 tar -vxzf MLNX_OFED_LINUX-5.0-2.1.8.0-ubuntu20.04-x86_64.tgz
@@ -201,14 +203,14 @@ cd MLNX_OFED_LINUX-5.0-2.1.8.0-ubuntu20.04-x86_64
 ./mlnxofedinstall
 ```
 
-安装完成后，需要在本机的网络管理器中设置一下IB的IP配置，应用完毕IB的配置后，使用一以下命令重启IB服务
+After the installation is complete, you need to set the IP configuration of IB in the local network manager. After applying the IB configuration, use the following command to restart the IB service.
 
 ```shell
 /etc/init.d/openibd restart
 /etc/init.d/opensmd restart
 ```
 
-而后可以使用ibstat查看ib状态
+Then you can use ibstat to view the ib status
 
 ```
 CA 'mlx4_0'
@@ -232,40 +234,40 @@ CA 'mlx4_0'
 
 #### HPCX
 
-HPCX官网下载[HPC-X | NVIDIA | NVIDIA Developer](https://developer.nvidia.com/networking/hpc-x)
+HPCX official website download [HPC-X | NVIDIA | NVIDIA Developer](https://developer.nvidia.com/networking/hpc-x)
 
 ![image-20231203175812788](C:\Users\ASUS\AppData\Roaming\Typora\typora-user-images\image-20231203175812788.png)
 
-安装过程解压即可
+Just unzip the installation process
 
 ```
 tar -xvf hpcx.tbz
 ```
 
-具体的安装过程和使用方式可以参考[Installing and Loading HPC-X - NVIDIA Docs](https://docs.nvidia.com/networking/display/hpcxv212/installing+and+loading+hpc-x)
+For the specific installation process and usage, please refer to [Installing and Loading HPC-X - NVIDIA Docs](https://docs.nvidia.com/networking/display/hpcxv212/installing+and+loading+hpc-x)
 
-个人推荐使用的方式是modulefile，通过指定module_path和HPCX_HOME环境变量来加载管理
+The personally recommended method is modulefile, which is loaded and managed by specifying module_path and HPCX_HOME environment variables.
 
 ```shell
 export HPCX_HOME=/home/oyhd/hpcx-v2.13-gcc-MLNX_OFED_LINUX-5-ubuntu20.04-cuda11-gdrcopy2-nccl2.12-x86_64
 export MODULEPATH=$MODULEPATH:$HPCX_HOME/modulefiles
 ```
 
-而后使用时
+and then use
 
 ```shell
 module load hpcx
 ```
 
-不使用时
+when not in use
 
 ```shell
 module unload hpcx
 ```
 
-### 项目的安装方式
+### How to install the project
 
-项目因为压缩需要测试的文件是直接写入和随机写入的，因为为了测试大文件性能，这些随机生成文件的自身大小都非常大，无法放到项目目录中上传，同时直接通过上传下载的方式并不如直接生成一个磁盘读写的文件速度快，因此写了一个生成测试文件的脚本，通过运行脚本生成对应的测试文件和目录
+The files that the project needs to test due to compression are written directly and randomly. Because in order to test the performance of large files, the sizes of these randomly generated files are very large and cannot be uploaded in the project directory. At the same time, they can be directly uploaded and downloaded. It is not as fast as directly generating a disk read and write file, so I wrote a script to generate test files, and generated the corresponding test files and directories by running the script.
 
 ```shell
 mkdir bin
@@ -277,9 +279,9 @@ cd ..
 make
 ```
 
-(需要事先module load hpcx，同时将CUDA toolkit加入环境变量)
+(You need to module load hpcx in advance and add CUDA toolkit to the environment variable)
 
-然后运行可以在项目文件夹目录下，使用以下脚本即可运行相应测试程序（以下脚本本身也是基于Gaussian16的作业批处理管理系统（PBS），可以直接使用该脚本提交到PBS上运行）
+Then you can run the corresponding test program in the project folder directory and use the following script (the following script itself is also based on the Gaussian16 job batch management system (PBS) and can be directly submitted to PBS for running using this script)
 
 ```shell
 ./scripts/CUDAMPI.pbs
@@ -288,11 +290,11 @@ make
 ./scripts/Serial.pbs
 ```
 
-## 代码分析
+## Code analysis
 
-### 代码架构
+### Code structure
 
-为了更好的演示和对比测试，在项目里添加了串行（Serial）、MPI、CUDA、CUDAMPI的支持
+For better demonstration and comparative testing, support for Serial, MPI, CUDA, and CUDAMPI has been added to the project.
 
 ```shell
 MPI-GPU-Compress/
@@ -358,62 +360,62 @@ MPI-GPU-Compress/
 
 ### Common Design
 
-#### 架构和Makefile
+#### Architecture and Makefile
 
-考虑到均衡各个src的设计，就将多个src设计均放到了顶层，共享一套include files，并根据这一规则书写了Makefile
+Considering the balanced design of each src, I put multiple src designs on the top level, shared a set of include files, and wrote the Makefile according to this rule
 
-+ 顶层
++ top
+  Designed to be implemented as CUDAMPI CUDA MPI Serial, recursive compilation of a subdirectory is implemented for all four
 
-设计为CUDAMPI  CUDA  MPI  Serial实现，为四者均实现了一个子目录的递归编译
+  ```shell
+  SUBDIRS = CUDAMPI CUDA MPI Serial
+  
+  all:
+  	@for dir in $(SUBDIRS); do \
+  		make -C $$dir; \
+  	done
+  
+  clean:
+  	@for dir in $(SUBDIRS); do \
+  		make clean -C $$dir; \
+  	done
+  
+  .PHONY: all clean $(SUBDIRS)
+  ```
 
-```makefile
-SUBDIRS = CUDAMPI CUDA MPI Serial
++ Within the project (CUDAMPI example)
+  Write the corresponding compilation and linking rules, as well as the included compilation file tree
 
-all:
-	@for dir in $(SUBDIRS); do \
-		make -C $$dir; \
-	done
+  ```shell
+  NVCC = nvcc
+  SRC_DIR = .
+  INCLUDE_DIR = ../include
+  BIN_DIR = ../bin
+  
+  CU_FILES = $(SRC_DIR)/CUDAMPICompress.cu $(INCLUDE_DIR)/parallelFunctions.cu $(INCLUDE_DIR)/GPUWrapper.cu $(INCLUDE_DIR)/kernel.cu
+  
+  all: CUDAMPI_compress
+  
+  CUDAMPI_compress: $(CU_FILES)
+  	$(NVCC) -dc $^
+  	$(NVCC) *.o -lmpi -o $(BIN_DIR)/CUDAMPI_compress
+  	rm -f *.o
+  
+  clean:
+  	rm -f $(BIN_DIR)/CUDAMPI_compress
+  
+  .PHONY: all clean
+  ```
 
-clean:
-	@for dir in $(SUBDIRS); do \
-		make clean -C $$dir; \
-	done
-
-.PHONY: all clean $(SUBDIRS)
-```
-
-+ 项目内（CUDAMPI举例）
-
-书写相应的编译链接规则，以及所包含的编译文件树
-
-```makefile
-NVCC = nvcc
-SRC_DIR = .
-INCLUDE_DIR = ../include
-BIN_DIR = ../bin
-
-CU_FILES = $(SRC_DIR)/CUDAMPICompress.cu $(INCLUDE_DIR)/parallelFunctions.cu $(INCLUDE_DIR)/GPUWrapper.cu $(INCLUDE_DIR)/kernel.cu
-
-all: CUDAMPI_compress
-
-CUDAMPI_compress: $(CU_FILES)
-	$(NVCC) -dc $^
-	$(NVCC) *.o -lmpi -o $(BIN_DIR)/CUDAMPI_compress
-	rm -f *.o
-
-clean:
-	rm -f $(BIN_DIR)/CUDAMPI_compress
-
-.PHONY: all clean
-```
+  
 
 #### include
 
 + GPUWrapper.cu
 
-  为了对文件情况的支持性考虑，需要简单对可能的情况分一个类（数据长度使用unsigned int方式存储，可能会导致int溢出；单个gpu显存有限，可能需要多次运行kernel分批处理）
+  In order to support the file situation, it is necessary to simply classify the possible situations into one category (the data length is stored in unsigned int mode, which may cause int overflow; a single GPU memory is limited, and the kernel batch processing may need to be run multiple times)
 
-  故在创建数组时和运行kernel时做了以下处理
+  Therefore, the following processing is done when creating the array and when running the kernel.
 
   ```c++
   // generate offset
@@ -441,7 +443,7 @@ clean:
   }
   ```
 
-  内存申请和拷贝
+  Memory alloc and copying
 
   ```c++
   // GPU initiation
@@ -468,15 +470,15 @@ clean:
   }
   ```
 
-  而后便是执行kernel和释放内存
+  Then the kernel is executed and the memory is released.
 
 + kernel.cu
 
-  kernel.cu中便是实现compress函数的位置，分别需要实现以上提到的4种kernel
+  Kernel.cu is where the compress function is implemented. The four kernels mentioned above need to be implemented respectively.
 
-  以multiple run and with overflow（出现整数表示溢出和GPU显存溢出）为例讲解目前所实现的功能
+  Taking multiple run and with overflow (the occurrence of integers indicating overflow and GPU memory overflow) as an example to explain the currently implemented functions
 
-  首先期望可以支持块内的share_memory，因此需要完成块内的共享内存和溢出判断：
+  First, it is expected that share_memory within the block can be supported, so shared memory and overflow judgment within the block need to be completed:
 
   ```c++
   	// when shared memory is sufficient
@@ -490,7 +492,7 @@ clean:
   	__syncthreads();
   ```
 
-  然后在每种情况下，根据table中的字段对数据进行压缩
+  Then in each case, the data is compressed based on the fields in the table
 
   ```c++
   for(i = pos + d_lowerPosition; i < overflowPosition; i += blockDim.x){
@@ -513,7 +515,7 @@ clean:
   		}
   ```
 
-  将压缩后的数据进行位操作，将各个位按字节组合
+  Perform bit operations on the compressed data and combine each bit into bytes
 
   ```c++
   	for(i = pos * 8; i < d_compressedDataOffset[overflowPosition]; i += blockDim.x * 8){
@@ -543,92 +545,92 @@ clean:
 
 + parallelFunctions.cu
 
-  sortHuffmanTree 函数:
+  sortHuffmanTree  function:
 
   ```
   cppCopy code
   void sortHuffmanTree(int i, int distinctCharacterCount, int combinedHuffmanNodes)
   ```
 
-  - 该函数根据频率对 Huffman 树节点进行排序
-  - huffmanTreeNode 是一个全局数组，包含 Huffman 树节点的信息，节点结构为 struct huffmanTree
-  - i 表示已合并的 Huffman 节点的数量，distinctCharacterCount 表示不同字符的数量，combinedHuffmanNodes 表示已合并的 Huffman 节点的起始位置
+  - This function sorts Huffman tree nodes according to frequency
+  - huffmanTreeNode is a global array containing information about Huffman tree nodes. The node structure is struct huffmanTree
+  - i represents the number of merged Huffman nodes, distinctCharacterCount represents the number of distinct characters, combinedHuffmanNodes represents the starting position of the merged Huffman nodes
 
   
 
-  buildHuffmanTree 函数:
+  buildHuffmanTree function:
 
   ```
   cppCopy code
   void buildHuffmanTree(int i, int distinctCharacterCount, int combinedHuffmanNodes)
   ```
 
-  - 该函数根据 sortHuffmanTree 的结果构建 Huffman 树
-  - huffmanTreeNode 是一个全局数组，包含 Huffman 树节点的信息，节点结构为 struct huffmanTree
-  - i 表示已合并的 Huffman 节点的数量，distinctCharacterCount 表示不同字符的数量，combinedHuffmanNodes 表示已合并的 Huffman 节点的起始位置
-  - 函数通过合并频率最低的两个节点构建 Huffman 树
+  - This function builds a Huffman tree based on the results of sortHuffmanTree
+  - huffmanTreeNode is a global array containing information about Huffman tree nodes. The node structure is struct huffmanTree
+  - i represents the number of merged Huffman nodes, distinctCharacterCount represents the number of distinct characters, combinedHuffmanNodes represents the starting position of the merged Huffman nodes
+  - Function builds a Huffman tree by merging the two nodes with the lowest frequency
 
   
 
-  buildHuffmanDictionary 函数:
+  buildHuffmanDictionary function:
 
   ```
   cppCopy code
   void buildHuffmanDictionary(struct huffmanTree *root, unsigned char *bitSequence, unsigned char bitSequenceLength)
   ```
 
-  - 该函数根据 Huffman 树构建 Huffman 编码表
-  - root 是 Huffman 树的根节点，bitSequence 用于存储当前字符的 Huffman 编码，bitSequenceLength 表示编码的长度
-  - 递归地遍历 Huffman 树，生成每个字符的 Huffman 编码，并将结果存储在全局变量 huffmanDictionary 中
-  - 如果编码长度小于 192，将完整的编码存储在 huffmanDictionary 中；否则，存储在 bitSequenceConstMemory 中，同时设置 constMemoryFlag
+  - This function builds a Huffman coding table based on a Huffman tree
+  - root is the root node of the Huffman tree, bitSequence is used to store the Huffman encoding of the current character, bitSequenceLength represents the length of the encoding
+  - Recursively traverse the Huffman tree, generate the Huffman encoding of each character, and store the result in the global variable huffmanDictionary
+  - If the encoding length is less than 192, store the complete encoding in huffmanDictionary; otherwise, store it in bitSequenceConstMemory and set constMemoryFlag
 
   
 
-  createDataOffsetArray 函数 (单次运行，无溢出):
+  createDataOffsetArray Function (single run, no overflow):
 
   ```
   cppCopy code
   void createDataOffsetArray(unsigned int *compressedDataOffset, unsigned char* inputFileData, unsigned int inputFileLength)
   ```
 
-  - 生成数据偏移数组，用于压缩数据
-  - compressedDataOffset 存储每个字符对应的压缩后数据的起始偏移
-  - inputFileData 是输入的原始数据
-  - 如果最后一个偏移不是 8 的倍数，会进行相应的填充
+  - Generate data offset array for compressing data
+  - compressedDataOffset stores the starting offset of the compressed data corresponding to each character
+  - inputFileData is the original data entered
+  - If the last offset is not a multiple of 8, padding will be done accordingly
 
   
 
-  createDataOffsetArray 函数 (单次运行，有溢出):
+  createDataOffsetArray function (single run, with overflow):
 
   ```
   cppCopy codevoid createDataOffsetArray(unsigned int *compressedDataOffset, unsigned char* inputFileData, unsigned int inputFileLength, 
                               unsigned int *integerOverflowIndex, unsigned int *bitPaddingFlag, int numBytes)
   ```
 
-  - 生成数据偏移数组，考虑到溢出情况
-  - compressedDataOffset 存储每个字符对应的压缩后数据的起始偏移
-  - inputFileData 是输入的原始数据
-  - integerOverflowIndex 存储整数溢出的位置，bitPaddingFlag 存储相应位置是否需要填充
-  - numBytes 表示每个线程块可处理的最大字节数
+  - Generate data offset array, taking into account overflow situations
+  - compressedDataOffset stores the starting offset of the compressed data corresponding to each character
+  - inputFileData is the original data entered
+  - integerOverflowIndex stores the position where the integer overflows, and bitPaddingFlag stores whether the corresponding position needs to be filled.
+  - numBytes represents the maximum number of bytes that each thread block can process
 
   
 
-  createDataOffsetArray 函数 (多次运行，无溢出):
+  createDataOffsetArray function (run multiple times, no overflow):
 
   ```
   cppCopy codevoid createDataOffsetArray(unsigned int *compressedDataOffset, unsigned char* inputFileData, unsigned int inputFileLength, 
                               unsigned int *gpuMemoryOverflowIndex, unsigned int *gpuBitPaddingFlag, long unsigned int mem_req)
   ```
 
-  - 生成数据偏移数组，考虑到多次运行和 GPU 内存的限制，无溢出情况
-  - compressedDataOffset 存储每个字符对应的压缩后数据的起始偏移
-  - inputFileData 是输入的原始数据
-  - gpuMemoryOverflowIndex 存储 GPU 内存溢出的位置，gpuBitPaddingFlag 存储相应位置是否需要填充
-  - mem_req 表示每次运行的 GPU 内存限制
+  - Generate data offset arrays, taking into account multiple runs and GPU memory limitations, without overflow situations
+  - compressedDataOffset stores the starting offset of the compressed data corresponding to each character
+  - inputFileData is the original data entered
+  - gpuMemoryOverflowIndex stores the location where GPU memory overflows, and gpuBitPaddingFlag stores whether the corresponding location needs to be filled.
+  - mem_req represents the GPU memory limit per run
 
   
 
-  createDataOffsetArray 函数 (多次运行，有溢出):
+  createDataOffsetArray function (run multiple times, with overflow):
 
   ```
   cppCopy codevoid createDataOffsetArray(unsigned int *compressedDataOffset, unsigned char* inputFileData, unsigned int inputFileLength, 
@@ -636,16 +638,16 @@ clean:
                               unsigned int *gpuMemoryOverflowIndex, unsigned int *gpuBitPaddingFlag, int numBytes, long unsigned int mem_req)
   ```
 
-  - 生成数据偏移数组，考虑到多次运行和 GPU 内存的限制，有溢出情况
-  - compressedDataOffset 存储每个字符对应的压缩后数据的起始偏移
-  - inputFileData 是输入的原始数据
-  - integerOverflowIndex 存储整数溢出的位置，bitPaddingFlag 存储相应位置是否需要填充
-  - gpuMemoryOverflowIndex 存储 GPU 内存溢出的位置，gpuBitPaddingFlag 存储相应位置是否需要填充
-  - numBytes 表示每个线程块可处理的最大字节数
-  - mem_req 表示每次运行的 GPU 内存限制
+  - Generate data offset array, taking into account multiple runs and GPU memory limitations, there is an overflow situation
+  - compressedDataOffset stores the starting offset of the compressed data corresponding to each character
+  - inputFileData is the original data entered
+  - integerOverflowIndex stores the position where the integer overflows, and bitPaddingFlag stores whether the corresponding position needs to be filled.
+  - gpuMemoryOverflowIndex stores the location where GPU memory overflows, and gpuBitPaddingFlag stores whether the corresponding location needs to be filled.
+  - numBytes represents the maximum number of bytes that each thread block can process
+  - mem_req represents the GPU memory limit per run
 
 + parallelHeader.h
-  parallelHeader 中是定义了一些共用型的函数和变量，并引入了一些通用性质的头文件，期望可以在CUDA内部的程序和CUDAMPI程序中可以仅实现相应的启动程序
+  parallelHeader defines some common functions and variables, and introduces some common header files. It is expected that only the corresponding startup program can be implemented in CUDA internal programs and CUDAMPI programs.
 
   ```c++
   #ifndef PARALLEL_HEADER_H
@@ -699,12 +701,12 @@ clean:
   #endif // PARALLEL_HEADER_H
   ```
 
-+ 其他的文件（serialFunctions.c serialHeader.h）
-  也是类似于cuda部分，将一些CPU串行的函数部分放在了include下（由于不是本项目的工作，不详细讲解了）
++ Other files (serialFunctions.c serialHeader.h)
+  It is also similar to the cuda part. Some CPU serial function parts are placed under include (since it is not the work of this project, I will not explain it in detail)
 
 #### tests
 
-tests是为每个样例（MPI分了一次PROC，然后总体均分成了基于不同的FILE_SIZE，并且对每一种情况都运行了3次）
+The tests are for each sample (MPI divides the PROC once, and then divides the whole into equal parts based on different FILE_SIZE, and runs 3 times for each case)
 
 ```shell
 #!/bin/bash
@@ -734,72 +736,72 @@ done
 
 ### CUDA
 
-CUDA部分主要为CUDACompress.cu 代码主要实现了对输入文件进行 Huffman 压缩的流程，本项目的代码中将各个功能均分离成单个模块
+The CUDA part is mainly CUDACompress.cu. The code mainly implements the process of Huffman compression of input files. In the code of this project, each function is separated into a single module.
 
-1. **读取输入文件：**
-   - readInputFile 函数用于从文件中读取输入数据
-   - 打开文件，获取文件长度，分配内存，读取文件内容
-2. **计算字符频率：**
-   - calculateFrequency 函数统计输入数据中每个字符的频率
-   - 使用数组 frequency记录每个字符的出现次数
-3. **初始化 Huffman 树节点：**
-   - initializeHuffmanTreeNodes函数初始化 Huffman 树的节点
-   - 根据字符频率创建叶子节点，并记录叶子节点的数量
-4. **构建 Huffman 树：**
-   - buildHuffmanTreeNodes函数通过合并频率最低的两个节点来构建 Huffman 树
-   - 通过调用 sortHuffmanTree和 buildHuffmanTree函数，循环构建 Huffman 树
-5. **构建 Huffman 编码表：**
-   - buildHuffmanDictionary函数根据 Huffman 树构建 Huffman 编码表
-   - 通过递归遍历 Huffman 树，生成每个字符的 Huffman 编码，并记录编码长度
-   - Huffman 编码存储在全局变量 huffmanDictionary中
-6. **计算内存需求：**
-   - calculateMemoryRequirements函数计算压缩过程中所需的 GPU 内存
-   - 计算数据偏移数组的内存需求，检查 GPU 是否有足够的内存来存储编码后的数据
-   - 调用 lauchCUDAHuffmanCompress 函数执行 GPU 压缩
-7. **写入输出文件：**
-   - writeOutputFile函数将压缩后的数据写入输出文件
-   - 写入输入文件长度、字符频率和压缩后的数据
-8. **主函数 - `main`：**
-   - 从命令行参数中获取输入和输出文件名
-   - 读取输入文件，计算字符频率，初始化 Huffman 树节点，构建 Huffman 树，构建 Huffman 编码表
-   - 计算 GPU 内存需求，执行 GPU 压缩
-   - 写入输出文件，输出程序运行时间
+1. **Read input file:**
+    - The readInputFile function is used to read input data from a file
+    - Open the file, get the file length, allocate memory, read the file content
+2. **Calculate character frequency:**
+    - calculateFrequency function counts the frequency of each character in the input data
+    - Use the array frequency to record the number of occurrences of each character
+3. **Initialize Huffman tree nodes:**
+    - The initializeHuffmanTreeNodes function initializes the nodes of the Huffman tree
+    - Create leaf nodes based on character frequency and record the number of leaf nodes
+4. **Construct Huffman tree:**
+    - The buildHuffmanTreeNodes function builds a Huffman tree by merging the two nodes with the lowest frequency
+    - Loop to build the Huffman tree by calling the sortHuffmanTree and buildHuffmanTree functions
+5. **Build Huffman coding table:**
+    - The buildHuffmanDictionary function builds the Huffman coding table based on the Huffman tree
+    - Generate the Huffman code of each character by recursively traversing the Huffman tree, and record the code length
+    - Huffman encoding is stored in the global variable huffmanDictionary
+6. **Calculation memory requirements:**
+    - calculateMemoryRequirements function calculates the GPU memory required during compression
+    - Calculate the memory requirements of the data offset array and check whether the GPU has enough memory to store the encoded data
+    - Call lauchCUDAHuffmanCompress function to perform GPU compression
+7. **Write to output file:**
+    - The writeOutputFile function writes the compressed data to the output file
+    - Write input file length, character frequency and compressed data
+8. **Main function - `main`:**
+    - Get input and output filenames from command line arguments
+    - Read input files, calculate character frequencies, initialize Huffman tree nodes, build Huffman trees, and build Huffman coding tables
+    - Calculate GPU memory requirements and perform GPU compression
+    - Write output file and output program running time
 
 ### CUDAMPI
 
-1. **MPI 初始化：**
-   - MPI_Init 函数初始化 MPI 环境
-   - 获取当前进程的 rank 和总进程数
-2. **读取输入文件：**
-   - 使用 MPI 文件 I/O 打开文件，读取本地进程负责的数据块
-   - 使用 MPI_File_open、MPI_File_seek 和 MPI_File_read 函数
-3. **统计字符频率：**
-   - 每个进程统计其负责的数据块中字符的频率
-   - frequency数组记录每个字符的出现次数
-4. **构建 Huffman 树：**
-   - 各进程独立统计频率后，通过 MPI 函数进行归约操作，将各进程的频率相加，得到全局频率
-   - 主进程（rank == 0）构建 Huffman 树，然后通过广播 head_huffmanTreeNode 给其他进程
-5. **计算内存需求：**
-   - cudaMemGetInfo函数获取 GPU 内存信息
-   - 计算偏移数组的内存需求，检查 GPU 是否有足够的内存存储编码后的数据
-   - 使用 MPI_Bcast将内存需求信息广播给所有进程
-6. **调用 GPU 压缩 Kernel：**
-   - 各进程根据其负责的数据块调用 GPU 压缩的 Kernel
-   - lauchCUDAHuffmanCompress 函数进行 GPU 压缩
-7. **计算各进程压缩数据的长度：**
-   - 主进程计算每个进程压缩后数据的长度，然后通过 MPI_Gather将这些长度收集到主进程
-   - 更新数据长度以反映偏移
-8. **MPI 文件 I/O：写入输出文件：**
-   - 主进程使用 MPI 文件 I/O 将压缩后的数据写入输出文件
-   - MPI_File_open、MPI_File_seek和 MPI_File_write函数用于写入文件
-9. **退出环境，终止MPI ：**
-   - MPI_Finalize终止 MPI 环境，并返回
+1. **MPI initialization:**
+    - MPI_Init function initializes the MPI environment
+    - Get the rank of the current process and the total number of processes
+2. **Read input file:**
+    - Use MPI file I/O to open the file and read the data blocks responsible for the local process
+    - Use MPI_File_open, MPI_File_seek and MPI_File_read functions
+3. **Statistical character frequency:**
+    - Each process counts the frequency of characters in the data block it is responsible for
+    - The frequency array records the number of occurrences of each character
+4. **Construct Huffman tree:**
+    - After each process counts the frequency independently, the reduction operation is performed through the MPI function, and the frequencies of each process are added to obtain the global frequency.
+    - The main process (rank == 0) builds the Huffman tree and then broadcasts head_huffmanTreeNode to other processes
+5. **Calculation memory requirements:**
+    - cudaMemGetInfo function obtains GPU memory information
+    - Calculate the memory requirements of the offset array and check whether the GPU has enough memory to store the encoded data
+    - Use MPI_Bcast to broadcast memory requirement information to all processes
+6. **Calling GPU compression Kernel:**
+    - Each process calls the GPU compressed Kernel according to the data block it is responsible for
+    - lauchCUDAHuffmanCompress function for GPU compression
+7. **Calculate the length of compressed data of each process:**
+    - The main process calculates the length of the compressed data of each process, and then collects these lengths to the main process through MPI_Gather
+    - Update data length to reflect offset
+8. **MPI File I/O: Write output file:**
+    - The main process uses MPI file I/O to write the compressed data to the output file
+    - MPI_File_open, MPI_File_seek and MPI_File_write functions are used to write files
+9. **Exit the environment and terminate MPI:**
+    - MPI_Finalize terminates the MPI environment and returns
 
-## 性能评估
+## Performance evaluation
 
-由于经常可以使用的测试机器上的用户运行内存只可以支持到使用768MB的文件，所以目前的测试都是对（64,128,256,512,768）而进行的性能评估
+Since the user running memory on the commonly used test machine can only support the use of 768MB files, the current tests are all performance evaluations for (64,128,256,512,768)
 
-### 串行性能
+### Serial performace
 
 ```shell
 Run: Serial
@@ -831,7 +833,7 @@ Time taken: 88:931 s
 Time taken: 88:909 s
 ```
 
-### CUDA性能
+### CUDA performance
 
 ```shell
 Run: CUDA
@@ -863,7 +865,7 @@ Time taken: 19:442 s
 Time taken: 19:620 s
 ```
 
-### CUDAMPI性能
+### CUDAMPI performance
 
 ```shell
 Run: CUDAMPI
@@ -980,16 +982,16 @@ Time taken: 8:50 s
 Time taken: 8:12 s
 ```
 
-可以看到CUDA的直接实现相比与串行方式就获得了4.53倍的加速比，在CUDAMPI版本内，由于多进程的IO处理，使得IO和压缩后的Gather部分的性能有明显提高，并且可以发现使用MPI内建函数实现的IO优化，即便是单核性能相比于CUDA也有一定的提高（MPI的内建函数很多会基于宏，并且对于文件seek、find都是做了对数级的优化的）
+It can be seen that the direct implementation of CUDA achieves an acceleration ratio of 4.53 times compared with the serial method. In the CUDAMPI version, due to multi-process IO processing, the performance of the IO and compressed Gather parts is significantly improved, and can It was found that using MPI built-in functions to achieve IO optimization, even single-core performance has been improved to a certain extent compared to CUDA (many of MPI's built-in functions are based on macros, and file seek and find are logarithmically optimized. of)
 
-## 未来的工作
+## Future Work
 
-目前项目是使用MPI + OpenMP实现串行部分的某些操作，目前由于其多进程特征比较明显，以及期望练习一下MPI + CUDA的分布式训练，但最终没有完成多卡版本，同时也没有进一步在多线程角度进行优化。但目前的实现方案，对于后续可能启动的多机支持的效果会更好，只不过当下最实用的场景还是多核 + 单卡的一般性设备，同时也可以方便一些日常使用Linux作为主要工作系统的用户有一个普遍的压缩加速支持
+The current project employs MPI + OpenMP to implement certain operations serially. Due to its prominent multi-process characteristics and the desire to practice MPI + CUDA distributed training, a multi-card version has not been completed yet, nor has there been further optimization in a multi-threading context. However, the current implementation is likely to be more effective for future multi-machine support scenarios. The most practical current application remains for multicore + single-card general-purpose devices, also providing widespread compression acceleration support for users who primarily use Linux as their main operating system.
 
-未来的工作可能集中在以下几个方向：
+Future work may focus on the following directions:
 
-+ 对于编码部分的处理，目前是均使用串行在MPI上实现，可以引入OpenMP可以大幅提高编码部分的速度，同时对于一些比较大的文件，可以考虑在编码部分就启用GPU支持
-+ 目前在多卡的设备上仍然没有一个完整的支持，原计划的确希望可以对于目前服务器这种单机双卡的架构进行一个分布式优化，考虑过将MPI进程同时绑定在一个GPU上，但实际的压缩/解压性能其实目前的瓶颈并不在于GPU的压缩计算上，通过MPI的多进程改善IO的效果要比使用两张卡的性能好很多（最开始使用MPI + CUDA的时候就是使用两个线程绑定，但是后续发现性能不如直接改善IO，而也因此同时发现了多进程的方案并没那么好，或许当下多线程会是优选，同时也是因此而发现了MPI + CUDA想对于多卡支持更好则应当需要一个灵活配置的过程，这对于目前的代码来说在支持性的工作量有些过高，目前还未能成功实现）
-+ 中间尝试过使用NVLink的GPU Direct加速GPU之间的通信，可以显著提高多卡GPU压缩性能，但对于没有NVLink的时候则没那么通用，后期项目Debug的时候并没有保持相关的支持，现被遗弃，后面有时间期望可以补充上
-+ 目前对于整个项目的部署支持上感觉还是不够好，目前正在考虑docker方案，以及应用打包方案等等。当前的项目是使用Nvidia的整套MPI + CUDA的工具库，当下HPCX对于项目的MPI封装来说仍然是一个必需品，直接使用OpenMPI并不能直接完成相关代码的编译运行，同时MPI部分代码到后期因为环境问题，我自己都已经跑不起来实验了，目前影响因素仍然未知，纯MPI部分代码还有待后续测试
-+ 对于压缩、解压缩的文件格式需要额外支持，这一点目前仅是将文件当做字节码的方式输入、还原，并不支持一个普遍的压缩、解压缩的文件格式。换句话说就是，当前只能支持两台同样配置了本项目的机器上通过该项目可以压缩后传输文件到另一台机器上并使用该项目解压缩，想变得更实用则需要对相关的文件类型提供一个额外的支持
+- For the coding part, which is currently implemented serially in MPI, introducing OpenMP could significantly enhance the speed of the coding process. Additionally, for larger files, considering GPU support in the coding phase could be beneficial.
+- There is still no complete support for multi-card devices. The original plan indeed aimed at distributed optimization for the current server-type single-machine dual-card architecture. There was consideration of binding MPI processes to a single GPU, but the actual bottleneck in compression/decompression performance is not in GPU computation. Improving IO through MPI multi-processes has shown better results than using two cards (originally, MPI + CUDA used two threads, but it was later found that improving IO was more effective). This discovery led to the realization that a multi-threaded approach might be preferable at present and that MPI + CUDA might need a more flexible configuration process for better multi-card support, which is currently a high workload for support and has not been successfully implemented.
+- Attempts were made to use NVLink's GPU Direct to accelerate communication between GPUs, significantly improving multi-GPU compression performance. However, this is not as universal without NVLink, and this support was not maintained during later project debugging. There are plans to add this feature in the future.
+- The deployment support for the entire project still feels inadequate. Currently, considering solutions like Docker and application packaging. The project uses Nvidia's complete MPI + CUDA toolkit, and HPCX is still essential for the project's MPI wrapper. Direct use of OpenMPI does not support the compilation and execution of the related code. Additionally, due to environmental issues, some MPI code is no longer runnable, and the influencing factors are still unknown. Pure MPI part of the code requires further testing.
+- Support for compressed and decompressed file formats needs additional consideration. Currently, the project treats files as bytecode for input and restoration and does not support a general compression/decompression file format. In other words, currently, only two machines configured with this project can compress and transfer files to each other and decompress them using the project. To become more practical, additional support for related file types is needed.
