@@ -1,0 +1,20 @@
+#!/bin/bash
+#PBS -N CUDA_job
+#PBS -l select=1:ncpus=16:ngpus=2:mem=256gb:phase=15
+#PBS -l walltime=04:00:00
+
+NUM_RUNS=3
+SIZES=(64 128 256 512 768)
+
+echo "Run: CUDA" >> logs/CUDA.txt
+echo "Resource: select=1:ncpus=16:ngpus=2:mem=256gb:phase=15" >> logs/CUDA.txt
+
+for FILE_SIZE in "${SIZES[@]}"; do
+    echo ' ' >> logs/CUDA.txt
+    echo "FileSize: ${FILE_SIZE}MB" >> logs/CUDA.txt
+
+    for ((i=0; i<$NUM_RUNS; i++)); do
+        ./bin/CUDA_compress "TestFiles/mb${FILE_SIZE}" "TestFiles/mb${FILE_SIZE}_comp" >> logs/CUDA.txt
+        rm "TestFiles/mb${FILE_SIZE}_comp"
+    done
+done

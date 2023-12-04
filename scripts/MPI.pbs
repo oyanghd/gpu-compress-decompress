@@ -1,0 +1,23 @@
+#!/bin/bash
+#PBS -N MPI_job
+#PBS -l select=16:ncpus=16:mpiprocs=1:mem=256gb:phase=15
+#PBS -l walltime=04:00:00
+
+NUM_RUNS=3
+SIZES=(64 128 256 512 768 1024)
+
+echo "Run: MPI" >> logs/MPI.txt
+echo "Resource: select=32:ncpus=2:mpiprocs=1:mem=124gb:phase=10" >> logs/MPI.txt
+
+for FILE_SIZE in "${SIZES[@]}"; do
+    echo ' ' >> logs/MPI.txt
+    echo "FileSize: ${FILE_SIZE}MB" >> logs/MPI.txt
+
+    for PROCS in 1 2 4 8 16; do
+        echo "MPIPROCS: ${PROCS}" >> logs/MPI.txt
+        for ((i=0; i<$NUM_RUNS; i++)); do
+            mpirun -np ${PROCS} --mca mpi_cuda_support 0 ./bin/MPI_compress "TestFiles/mb${FILE_SIZE}" "TestFiles/mb${FILE_SIZE}_comp" >> logs/MPI.txt
+            rm "TestFiles/mb${FILE_SIZE}_comp"
+        done
+    done
+done

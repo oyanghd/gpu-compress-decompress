@@ -1,0 +1,20 @@
+#!/bin/bash
+#PBS -N Serial_job
+#PBS -l select=1:ncpus=16:mem=256gb:phase=15
+#PBS -l walltime=04:00:00
+
+NUM_RUNS=3
+FILE_SIZES=(64 128 256 512 768)
+
+echo "Run: Serial" >> logs/Serial_compress.txt
+echo "Resource: select=1:ncpus=20:mem=124gb:phase=15" >> logs/Serial_compress.txt
+
+for SIZE in "${FILE_SIZES[@]}"; do
+    echo " " >> logs/Serial_compress.txt
+    echo "FileSize: ${SIZE}MB" >> logs/Serial_compress.txt
+
+    for ((i=0; i<$NUM_RUNS; i++)); do
+        ./bin/compress "TestFiles/mb${SIZE}" "TestFiles/mb${SIZE}_comp" >> logs/Serial_compress.txt
+        rm "TestFiles/mb${SIZE}_comp"
+    done
+done
